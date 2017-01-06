@@ -43,7 +43,7 @@ public class BpnnClassifier {
     private void forward(List<Float> list) {
         // 输入层 得到第一层结果，不变，还是输入层结果
         for (int k = 0; k < list.size(); k++) {
-            mInputNodes.get(k).setForwardInputValue(list.get(k));
+            mInputNodes.get(k).setForwardOutputValue(list.get(k));
         }
 
         // 隐层 得到第二层结果，即经过隐藏层乘以权重相加后经过函数的结果
@@ -52,7 +52,7 @@ public class BpnnClassifier {
             for (int k = 0; k < mInputCount; k++) {//3
                 temp += mInputHiddenWeight[k][j] * mInputNodes.get(k).getForwardOutputValue();
             }
-            mHiddenNodes.get(j).setForwardInputValue(temp);
+            mHiddenNodes.get(j).setForwardOutputValue(temp);
         }
 
         // 输出层 得到最后的结果，即隐藏层结果乘以权重相加后经过函数的结果
@@ -62,7 +62,7 @@ public class BpnnClassifier {
                 temp += mHiddenOutputWeight[k][j]
                         * mHiddenNodes.get(k).getForwardOutputValue();
             }
-            mOutputNodes.get(j).setForwardInputValue(temp);
+            mOutputNodes.get(j).setForwardOutputValue(temp);
         }
     }
 
@@ -76,7 +76,7 @@ public class BpnnClassifier {
             float result = -1;
             if (j == type)
                 result = 1;
-            mOutputNodes.get(j).setBackwardInputValue(
+            mOutputNodes.get(j).setBackwardOutputValue(
                     mOutputNodes.get(j).getForwardOutputValue() - result);
         }
         // 隐层
@@ -85,7 +85,7 @@ public class BpnnClassifier {
             for (int k = 0; k < mOutputCount; k++)
                 temp += mHiddenOutputWeight[j][k]
                         * mOutputNodes.get(k).getBackwardOutputValue();
-            mHiddenNodes.get(j).setBackwardInputValue(temp);
+            mHiddenNodes.get(j).setBackwardOutputValue(temp);
         }
     }
 

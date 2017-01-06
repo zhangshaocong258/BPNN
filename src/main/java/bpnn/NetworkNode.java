@@ -16,11 +16,11 @@ public class NetworkNode {
     }
 
     // 节点前向输入输出值
-    private float mForwardInputValue;
+    private float mForwardInputValue;//输入并没有用
     private float mForwardOutputValue;
 
     // 节点反向输入输出值
-    private float mBackwardInputValue;
+    private float mBackwardInputValue;//输入并没有用
     private float mBackwardOutputValue;//即delta（δ）值
 
 
@@ -104,37 +104,37 @@ public class NetworkNode {
         return 0;
     }
 
-    public float getForwardInputValue() {
-        return mForwardInputValue;
-    }
+//    public float getForwardInputValue() {
+//        return mForwardInputValue;
+//    }
 
-    public void setForwardInputValue(float mInputValue) {
-        this.mForwardInputValue = mInputValue;
-        setForwardOutputValue(mInputValue);
-    }
+//    public void setForwardInputValue(float mInputValue) {
+//        this.mForwardInputValue = mInputValue;
+//        setForwardOutputValue(mInputValue);
+//    }
 
     public float getForwardOutputValue() {
         return mForwardOutputValue;
     }
 
-    private void setForwardOutputValue(float mInputValue) {
+    public void setForwardOutputValue(float mInputValue) {
         this.mForwardOutputValue = forwardSigmoid(mInputValue);
     }
 
-    public float getBackwardInputValue() {
-        return mBackwardInputValue;
-    }
+//    public float getBackwardInputValue() {
+//        return mBackwardInputValue;
+//    }
 
-    public void setBackwardInputValue(float mBackwardInputValue) {
-        this.mBackwardInputValue = mBackwardInputValue;
-        setBackwardOutputValue(mBackwardInputValue);
-    }
+//    public void setBackwardInputValue(float mBackwardInputValue) {
+//        this.mBackwardInputValue = mBackwardInputValue;
+//        setBackwardOutputValue(mBackwardInputValue);
+//    }
 
     public float getBackwardOutputValue() {
         return mBackwardOutputValue;
     }
 
-    private void setBackwardOutputValue(float input) {
+    public void setBackwardOutputValue(float input) {
         this.mBackwardOutputValue = backwardPropagate(input);
     }
 }
