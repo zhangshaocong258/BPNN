@@ -59,8 +59,7 @@ public class DataUtil {
         while ((line = br.readLine()) != null) {
             String splits[] = line.split(sep);
             DataNode node = new DataNode();
-            int i = 0;
-            for (; i < splits.length; i++) {
+            for (int i = 0; i < splits.length; i++) {
                 try {
                     node.addAttrib(Float.valueOf(splits[i]));
                 } catch (NumberFormatException e) {

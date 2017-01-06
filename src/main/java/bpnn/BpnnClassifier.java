@@ -17,6 +17,8 @@ public class BpnnClassifier {
 
     private float[][] mInputHiddenWeight;
     private float[][] mHiddenOutputWeight;
+    private float[] mInputHiddenBias;
+    private float[] mHiddenOutputBias;
 
     private List<DataNode> trainNodes;
 
@@ -32,8 +34,10 @@ public class BpnnClassifier {
         mInputNodes = new ArrayList<NetworkNode>();
         mHiddenNodes = new ArrayList<NetworkNode>();
         mOutputNodes = new ArrayList<NetworkNode>();
-        mInputHiddenWeight = new float[inputCount][hiddenCount];//[3,11]
-        mHiddenOutputWeight = new float[hiddenCount][outputCount];//[11,3]
+        mInputHiddenWeight = new float[inputCount][hiddenCount];//[3,10]
+        mHiddenOutputWeight = new float[hiddenCount][outputCount];//[10,3]
+        mInputHiddenBias = new float[hiddenCount];//11
+        mHiddenOutputBias = new float[outputCount];//3
     }
 
 
@@ -47,44 +51,59 @@ public class BpnnClassifier {
         }
 
         // 隐层 得到第二层结果，即经过隐藏层乘以权重相加后经过函数的结果
-        for (int j = 0; j < mHiddenCount; j++) {//11
+        for (int j = 0; j < mHiddenCount; j++) {//10
             float temp = 0;
             for (int k = 0; k < mInputCount; k++) {//3
                 temp += mInputHiddenWeight[k][j] * mInputNodes.get(k).getForwardOutputValue();
             }
+            temp += mInputHiddenBias[j];
             mHiddenNodes.get(j).setForwardOutputValue(temp);
         }
 
         // 输出层 得到最后的结果，即隐藏层结果乘以权重相加后经过函数的结果
-        for (int j = 0; j < mOutputCount; j++) {
+        for (int j = 0; j < mOutputCount; j++) {//3
             float temp = 0;
-            for (int k = 0; k < mHiddenCount; k++) {
+            for (int k = 0; k < mHiddenCount; k++) {//10
                 temp += mHiddenOutputWeight[k][j]
                         * mHiddenNodes.get(k).getForwardOutputValue();
             }
+            temp += mHiddenOutputBias[j];
             mOutputNodes.get(j).setForwardOutputValue(temp);
         }
     }
 
     /**
      * 反向传播
+     * 对于输入层，有3种类型；0,1,2
+     * 得到3个结果，mOutputNodes对应3个位置：0,1,2，与输入对应
+     * 比如输入的类型为1，对输出，0,1,2分别赋值-1,1,-1
      */
-    private void backward(int type) {
+
+    private void backword(int type, float eta) {
+        calcDelta(type);
+        updateWeights(eta);
+    }
+
+    private void calcDelta(int type) {
         // 输出层
         for (int j = 0; j < mOutputCount; j++) {//3
             // 输出层计算误差把误差反向传播，这里-1代表不属于，1代表属于
             float result = -1;
-            if (j == type)
+            if (j == type) {
                 result = 1;
-            mOutputNodes.get(j).setBackwardOutputValue(
-                    mOutputNodes.get(j).getForwardOutputValue() - result);
+            }
+            //得到输出层的δ
+            mOutputNodes.get(j).setBackwardOutputValue(mOutputNodes.get(j).getForwardOutputValue() - result);
         }
+
         // 隐层
-        for (int j = 0; j < mHiddenCount; j++) {
+        for (int j = 0; j < mHiddenCount; j++) {//10
             float temp = 0;
-            for (int k = 0; k < mOutputCount; k++)
-                temp += mHiddenOutputWeight[j][k]
-                        * mOutputNodes.get(k).getBackwardOutputValue();
+            for (int k = 0; k < mOutputCount; k++) {//3
+                temp += mHiddenOutputWeight[j][k] * mOutputNodes.get(k).getBackwardOutputValue();
+            }
+
+            //得到倒数第二层的δ
             mHiddenNodes.get(j).setBackwardOutputValue(temp);
         }
     }
@@ -100,6 +119,7 @@ public class BpnnClassifier {
                 mInputHiddenWeight[i][j] -= eta
                         * mInputNodes.get(i).getForwardOutputValue()
                         * mHiddenNodes.get(j).getBackwardOutputValue();
+                mInputHiddenBias[j] -= eta * mHiddenNodes.get(j).getBackwardOutputValue();
             }
         }
         // 更新隐层到输出层的权重矩阵
@@ -108,6 +128,7 @@ public class BpnnClassifier {
                 mHiddenOutputWeight[i][j] -= eta
                         * mHiddenNodes.get(i).getForwardOutputValue()
                         * mOutputNodes.get(j).getBackwardOutputValue();
+                mHiddenOutputBias[j] -= eta * mOutputNodes.get(j).getBackwardOutputValue();
             }
         }
     }
@@ -117,8 +138,7 @@ public class BpnnClassifier {
         for (int i = 0; i < n; i++) {//迭代次数
             for (int j = 0; j < trainNodes.size(); j++) {//训练集124个
                 forward(trainNodes.get(j).getAttribList());
-                backward(trainNodes.get(j).getType());
-                updateWeights(eta);
+                backword(trainNodes.get(j).getType(), eta);
             }
             System.out.println("n = " + i);
 
@@ -135,19 +155,26 @@ public class BpnnClassifier {
         for (int i = 0; i < mInputCount; i++) {
             mInputNodes.add(new NetworkNode(NetworkNode.TYPE_INPUT));
         }
+
         for (int i = 0; i < mHiddenCount; i++) {
             mHiddenNodes.add(new NetworkNode(NetworkNode.TYPE_HIDDEN));
         }
+
         for (int i = 0; i < mOutputCount; i++) {
             mOutputNodes.add(new NetworkNode(NetworkNode.TYPE_OUTPUT));
         }
-        for (int i = 0; i < mInputCount; i++)
+
+        for (int i = 0; i < mInputCount; i++) {
             for (int j = 0; j < mHiddenCount; j++) {
                 mInputHiddenWeight[i][j] = (float) (Math.random() * 0.1);
+                mInputHiddenBias[j] = (float) (Math.random() * 0.1);
             }
+        }
+
         for (int i = 0; i < mHiddenCount; i++) {
             for (int j = 0; j < mOutputCount; j++) {
                 mHiddenOutputWeight[i][j] = (float) (Math.random() * 0.1);
+                mHiddenOutputBias[j] = (float) (Math.random() * 0.1);
             }
         }
     }
