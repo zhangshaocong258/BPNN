@@ -26,6 +26,13 @@ public class Config {
 
 
     /**
+     * 分隔符
+     */
+    public static String DELIMITER;
+
+
+
+    /**
      * eta
      */
     public static float eta;
@@ -45,8 +52,8 @@ public class Config {
         trainPath = properties.getProperty("trainPath");
         testPath = properties.getProperty("testPath");
         resultPath = properties.getProperty("resultPath");
+        DELIMITER = properties.getProperty("DELIMITER");
         eta = Float.valueOf(properties.getProperty("eta"));
-        trainPath = properties.getProperty("trainPath");
         nIter = Integer.valueOf(properties.getProperty("nIter"));
 
     }

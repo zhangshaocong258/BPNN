@@ -1,10 +1,18 @@
 package bpnn;
 
+import util.Config;
+import util.DataUtil;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by zsc on 2017/1/5.
+ * 标准BP神经网络分类器
  */
 public class BpnnClassifier {
     private int mInputCount;
@@ -20,23 +28,23 @@ public class BpnnClassifier {
     private float[] mInputHiddenBias;
     private float[] mHiddenOutputBias;
 
-    private List<DataNode> trainNodes;
-
-    public void setTrainNodes(List<DataNode> trainNodes) {
-        this.trainNodes = trainNodes;
-    }
+//    private List<DataNode> trainNodes;
+//
+//    public void setTrainNodes(List<DataNode> trainNodes) {
+//        this.trainNodes = trainNodes;
+//    }
 
     public BpnnClassifier(int inputCount, int hiddenCount, int outputCount) {
-        trainNodes = new ArrayList<DataNode>();
-        mInputCount = inputCount;//3
-        mHiddenCount = hiddenCount;//11
+//        trainNodes = new ArrayList<DataNode>();
+        mInputCount = inputCount;//4
+        mHiddenCount = hiddenCount;//10
         mOutputCount = outputCount;//3
         mInputNodes = new ArrayList<NetworkNode>();
         mHiddenNodes = new ArrayList<NetworkNode>();
         mOutputNodes = new ArrayList<NetworkNode>();
-        mInputHiddenWeight = new float[inputCount][hiddenCount];//[3,10]
-        mHiddenOutputWeight = new float[hiddenCount][outputCount];//[10,3]
-        mInputHiddenBias = new float[hiddenCount];//11
+        mInputHiddenWeight = new float[inputCount][hiddenCount];//[4,10]
+        mHiddenOutputWeight = new float[hiddenCount][outputCount];//[10,4]
+        mInputHiddenBias = new float[hiddenCount];//10
         mHiddenOutputBias = new float[outputCount];//3
     }
 
@@ -53,7 +61,7 @@ public class BpnnClassifier {
         // 隐层 得到第二层结果，即经过隐藏层乘以权重相加后经过函数的结果
         for (int j = 0; j < mHiddenCount; j++) {//10
             float temp = 0;
-            for (int k = 0; k < mInputCount; k++) {//3
+            for (int k = 0; k < mInputCount; k++) {//4
                 temp += mInputHiddenWeight[k][j] * mInputNodes.get(k).getForwardOutputValue();
             }
             temp += mInputHiddenBias[j];
@@ -61,7 +69,7 @@ public class BpnnClassifier {
         }
 
         // 输出层 得到最后的结果，即隐藏层结果乘以权重相加后经过函数的结果
-        for (int j = 0; j < mOutputCount; j++) {//3
+        for (int j = 0; j < mOutputCount; j++) {//4
             float temp = 0;
             for (int k = 0; k < mHiddenCount; k++) {//10
                 temp += mHiddenOutputWeight[k][j]
@@ -86,7 +94,7 @@ public class BpnnClassifier {
 
     private void calcDelta(int type) {
         // 输出层
-        for (int j = 0; j < mOutputCount; j++) {//3
+        for (int j = 0; j < mOutputCount; j++) {//4
             // 输出层计算误差把误差反向传播，这里-1代表不属于，1代表属于
             float result = -1;
             if (j == type) {
@@ -99,7 +107,7 @@ public class BpnnClassifier {
         // 隐层
         for (int j = 0; j < mHiddenCount; j++) {//10
             float temp = 0;
-            for (int k = 0; k < mOutputCount; k++) {//3
+            for (int k = 0; k < mOutputCount; k++) {//4
                 temp += mHiddenOutputWeight[j][k] * mOutputNodes.get(k).getBackwardOutputValue();
             }
 
@@ -133,14 +141,14 @@ public class BpnnClassifier {
         }
     }
 
-    public void train(float eta, int n) {
+    public void train(List<DataNode> trainList, float eta, int n) {
         init();
         for (int i = 0; i < n; i++) {//迭代次数
-            for (int j = 0; j < trainNodes.size(); j++) {//训练集124个
-                forward(trainNodes.get(j).getAttribList());
-                backword(trainNodes.get(j).getType(), eta);
+            for (int j = 0; j < trainList.size(); j++) {//训练集124个
+                forward(trainList.get(j).getAttribList());
+                backword(trainList.get(j).getType(), eta);
             }
-            System.out.println("n = " + i);
+//            System.out.println("n = " + i);
 
         }
     }
@@ -179,8 +187,27 @@ public class BpnnClassifier {
         }
     }
 
-    public int test(DataNode dn) {
-        forward(dn.getAttribList());
+    public void test(List<DataNode> testList) throws IOException {
+        BufferedWriter output = new BufferedWriter(new FileWriter(new File(Config.resultPath)));
+
+        for (DataNode testNode : testList) {
+            int type = getType(testNode);
+            System.out.println("***********");
+            List<Float> attributes = testNode.getAttribList();
+            for (int n = 0; n < attributes.size(); n++) {
+                output.write(attributes.get(n) + Config.DELIMITER);
+                output.flush();
+            }
+            output.write(DataUtil.getTypeName(type));
+            output.newLine();
+            output.flush();
+        }
+        output.close();
+
+    }
+
+    public int getType(DataNode dataNode) {
+        forward(dataNode.getAttribList());
         float result = 2;
         int type = 0;
         // 取最接近1的

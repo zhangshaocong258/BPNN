@@ -13,29 +13,43 @@ import java.util.*;
  */
 public class DataUtil {
 
-    private Map<String, Integer> resultTypes = new HashMap<String, Integer>();
-    private int resultsCount = 0;
+    private static Map<String, Integer> resultTypes = new HashMap<String, Integer>();
+    private static int trainCount = 0;
+    private static int resultCount = 0;
+    private static int hiddenCount = 0;
 
-    private DataUtil() {}
+//    private DataUtil() {}
 
-    private static class Holder {
-        private static DataUtil instance = new DataUtil();
-    }
-
-    public static DataUtil getInstance() {
-        return Holder.instance;
-
-    }
+//    private static class Holder {
+//        private static DataUtil instance = new DataUtil();
+//    }
+//
+//    public static DataUtil getInstance() {
+//        return Holder.instance;
+//
+//    }
 
     public Map<String, Integer> getTypeMap() {
         return resultTypes;
     }
 
-    public int getResultsCount() {
-        return resultsCount;
+    public static int getTrainCount() {
+        return trainCount;
     }
 
-    public String getTypeName(int type) {
+    public static int getResultCount() {
+        return resultCount;
+    }
+
+    public static int getHiddenCount() {
+        if (getTrainCount() != 0 && getResultCount() != 0) {
+            return hiddenCount = (int) Math.sqrt(getTrainCount() + getResultCount()) + 8;
+        } else {
+            throw new NullPointerException("训练数据个数或结果数据个数为0");
+        }
+    }
+
+    public static String getTypeName(int type) {
         for (String key : resultTypes.keySet()) {
             if (resultTypes.get(key) == type)
                 return key;
@@ -51,13 +65,15 @@ public class DataUtil {
      * @return
      * @throws Exception
      */
-    public List<DataNode> getDataList(String fileName, String sep)
-            throws IOException {
+    public static List<DataNode> getDataList(String fileName, String sep) throws IOException {
         List<DataNode> list = new ArrayList<DataNode>();
         BufferedReader br = new BufferedReader(new FileReader(new File(fileName)));
         String line;
         while ((line = br.readLine()) != null) {
-            String splits[] = line.split(sep);
+            String[] splits = line.split(sep);
+            if (trainCount == 0) {
+                trainCount = splits.length - 1;
+            }
             DataNode node = new DataNode();
             for (int i = 0; i < splits.length; i++) {
                 try {
@@ -65,8 +81,8 @@ public class DataUtil {
                 } catch (NumberFormatException e) {
                     // 非数字，则为类别名称，将类别映射为数字
                     if (!resultTypes.containsKey(splits[i])) {
-                        resultTypes.put(splits[i], resultsCount);
-                        resultsCount++;
+                        resultTypes.put(splits[i], resultCount);
+                        resultCount++;
                     }
                     node.setType(resultTypes.get(splits[i]));
                     list.add(node);

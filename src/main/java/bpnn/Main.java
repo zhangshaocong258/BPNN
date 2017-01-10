@@ -6,7 +6,7 @@ package bpnn;
 public class Main {
     public static void main(String[] args) throws Exception {
         BpnnProcessor bpnnProcessor = new BpnnProcessor();
-        bpnnProcessor.train();
-        bpnnProcessor.test();
+        bpnnProcessor.init();
+        bpnnProcessor.start();
     }
 }
