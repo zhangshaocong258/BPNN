@@ -19,14 +19,19 @@ public class BpnnClassifier {
     private int mHiddenCount;
     private int mOutputCount;
 
-    private List<NetworkNode> mInputNodes;
-    private List<NetworkNode> mHiddenNodes;
-    private List<NetworkNode> mOutputNodes;
+    private List<NetworkNode> mInputNodes;//4
+    private List<NetworkNode> mHiddenNodes;//10 delta（δ）个数等于隐藏层个数
+    private List<NetworkNode> mOutputNodes;//3 delta（δ）个数等于输出层个数
 
-    private float[][] mInputHiddenWeight;
-    private float[][] mHiddenOutputWeight;
-    private float[] mInputHiddenBias;
-    private float[] mHiddenOutputBias;
+    private float[][] mInputHiddenWeight;//输入层和隐藏层之间的权值
+    private float[][] mHiddenOutputWeight;//隐藏层和输出层之间的权值
+    private float[] mInputHiddenBias;//输入层和隐藏层之间的偏置
+    private float[] mHiddenOutputBias;//隐藏层和输出层之间的偏置
+
+    private float[][] mInputHiddenWeightOpt;//输入层和隐藏层之间的共享权值
+    private float[] mInputHiddenBiasOpt;//输入层和隐藏层之间的偏置
+
+
 
 //    private List<DataNode> trainNodes;
 //
@@ -46,6 +51,40 @@ public class BpnnClassifier {
         mHiddenOutputWeight = new float[hiddenCount][outputCount];//[10,4]
         mInputHiddenBias = new float[hiddenCount];//10
         mHiddenOutputBias = new float[outputCount];//3
+    }
+
+    /**
+     * 初始化
+     */
+    private void init() {
+        mInputNodes.clear();
+        mHiddenNodes.clear();
+        mOutputNodes.clear();
+        for (int i = 0; i < mInputCount; i++) {
+            mInputNodes.add(new NetworkNode(NetworkNode.TYPE_INPUT));
+        }
+
+        for (int i = 0; i < mHiddenCount; i++) {
+            mHiddenNodes.add(new NetworkNode(NetworkNode.TYPE_HIDDEN));
+        }
+
+        for (int i = 0; i < mOutputCount; i++) {
+            mOutputNodes.add(new NetworkNode(NetworkNode.TYPE_OUTPUT));
+        }
+
+        for (int i = 0; i < mInputCount; i++) {
+            for (int j = 0; j < mHiddenCount; j++) {
+                mInputHiddenWeight[i][j] = (float) (Math.random() * 0.1);
+                mInputHiddenBias[j] = (float) (Math.random() * 0.1);
+            }
+        }
+
+        for (int i = 0; i < mHiddenCount; i++) {
+            for (int j = 0; j < mOutputCount; j++) {
+                mHiddenOutputWeight[i][j] = (float) (Math.random() * 0.1);
+                mHiddenOutputBias[j] = (float) (Math.random() * 0.1);
+            }
+        }
     }
 
 
@@ -94,7 +133,7 @@ public class BpnnClassifier {
 
     private void calcDelta(int type) {
         // 输出层
-        for (int j = 0; j < mOutputCount; j++) {//4
+        for (int j = 0; j < mOutputCount; j++) {//3
             // 输出层计算误差把误差反向传播，这里-1代表不属于，1代表属于
             float result = -1;
             if (j == type) {
@@ -107,7 +146,7 @@ public class BpnnClassifier {
         // 隐层
         for (int j = 0; j < mHiddenCount; j++) {//10
             float temp = 0;
-            for (int k = 0; k < mOutputCount; k++) {//4
+            for (int k = 0; k < mOutputCount; k++) {//3
                 temp += mHiddenOutputWeight[j][k] * mOutputNodes.get(k).getBackwardOutputValue();
             }
 
@@ -130,15 +169,24 @@ public class BpnnClassifier {
                 mInputHiddenBias[j] -= eta * mHiddenNodes.get(j).getBackwardOutputValue();
             }
         }
+
+        for (int j = 0; j < mHiddenCount; j++) {
+            mInputHiddenBias[j] -= eta * mHiddenNodes.get(j).getBackwardOutputValue();
+        }
+
         // 更新隐层到输出层的权重矩阵
         for (int i = 0; i < mHiddenCount; i++) {
             for (int j = 0; j < mOutputCount; j++) {
                 mHiddenOutputWeight[i][j] -= eta
                         * mHiddenNodes.get(i).getForwardOutputValue()
                         * mOutputNodes.get(j).getBackwardOutputValue();
-                mHiddenOutputBias[j] -= eta * mOutputNodes.get(j).getBackwardOutputValue();
             }
         }
+
+        for (int j = 0; j < mOutputCount; j++) {
+            mHiddenOutputBias[j] -= eta * mOutputNodes.get(j).getBackwardOutputValue();
+        }
+
     }
 
     public void train(List<DataNode> trainList, float eta, int n) {
@@ -153,39 +201,6 @@ public class BpnnClassifier {
         }
     }
 
-    /**
-     * 初始化
-     */
-    private void init() {
-        mInputNodes.clear();
-        mHiddenNodes.clear();
-        mOutputNodes.clear();
-        for (int i = 0; i < mInputCount; i++) {
-            mInputNodes.add(new NetworkNode(NetworkNode.TYPE_INPUT));
-        }
-
-        for (int i = 0; i < mHiddenCount; i++) {
-            mHiddenNodes.add(new NetworkNode(NetworkNode.TYPE_HIDDEN));
-        }
-
-        for (int i = 0; i < mOutputCount; i++) {
-            mOutputNodes.add(new NetworkNode(NetworkNode.TYPE_OUTPUT));
-        }
-
-        for (int i = 0; i < mInputCount; i++) {
-            for (int j = 0; j < mHiddenCount; j++) {
-                mInputHiddenWeight[i][j] = (float) (Math.random() * 0.1);
-                mInputHiddenBias[j] = (float) (Math.random() * 0.1);
-            }
-        }
-
-        for (int i = 0; i < mHiddenCount; i++) {
-            for (int j = 0; j < mOutputCount; j++) {
-                mHiddenOutputWeight[i][j] = (float) (Math.random() * 0.1);
-                mHiddenOutputBias[j] = (float) (Math.random() * 0.1);
-            }
-        }
-    }
 
     public void test(List<DataNode> testList) throws IOException {
         BufferedWriter output = new BufferedWriter(new FileWriter(new File(Config.resultPath)));

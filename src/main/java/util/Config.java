@@ -30,8 +30,6 @@ public class Config {
      */
     public static String DELIMITER;
 
-
-
     /**
      * eta
      */
@@ -41,6 +39,21 @@ public class Config {
      * 迭代次数
      */
     public static int nIter;
+
+    /**
+     * 脾气虚证
+     */
+    public static String PiQiXuZhengNum;
+
+    /**
+     * 脾阳虚证
+     */
+    public static String PiYangXuZhengNum;
+
+    /**
+     * 脾肾阳虚证
+     */
+    public static String PiShenYangXuZhengNum;
 
     static {
         Properties properties = new Properties();
@@ -55,6 +68,9 @@ public class Config {
         DELIMITER = properties.getProperty("DELIMITER");
         eta = Float.valueOf(properties.getProperty("eta"));
         nIter = Integer.valueOf(properties.getProperty("nIter"));
+        PiQiXuZhengNum = properties.getProperty("PiQiXuZhengNum");
+        PiYangXuZhengNum = properties.getProperty("PiYangXuZhengNum");
+        PiShenYangXuZhengNum = properties.getProperty("PiShenYangXuZhengNum");
 
     }
 }
