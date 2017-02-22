@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class DataNode {
     private List<Float> mAttribList;
-    private int type;//三种类型，映射为1 2 3
+    private int type;//三种类型，映射为0 1 2
 
     public int getType() {
         return type;

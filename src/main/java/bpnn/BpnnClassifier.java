@@ -19,14 +19,15 @@ public class BpnnClassifier {
     private int mHiddenCount;
     private int mOutputCount;
 
+    //包含了前向输出值和后向输出值（delta）
     private List<NetworkNode> mInputNodes;//4
     private List<NetworkNode> mHiddenNodes;//10 delta（δ）个数等于隐藏层个数
     private List<NetworkNode> mOutputNodes;//3 delta（δ）个数等于输出层个数
 
     private float[][] mInputHiddenWeight;//输入层和隐藏层之间的权值
     private float[][] mHiddenOutputWeight;//隐藏层和输出层之间的权值
-    private float[] mInputHiddenBias;//输入层和隐藏层之间的偏置
-    private float[] mHiddenOutputBias;//隐藏层和输出层之间的偏置
+    private float[] mInputHiddenBias;//输入层和隐藏层之间的偏置，数值为后面节点个数
+    private float[] mHiddenOutputBias;//隐藏层和输出层之间的偏置，数值为后面节点个数
 
     private float[][] mInputHiddenWeightOpt;//输入层和隐藏层之间的共享权值
     private float[] mInputHiddenBiasOpt;//输入层和隐藏层之间的偏置
@@ -111,8 +112,7 @@ public class BpnnClassifier {
         for (int j = 0; j < mOutputCount; j++) {//4
             float temp = 0;
             for (int k = 0; k < mHiddenCount; k++) {//10
-                temp += mHiddenOutputWeight[k][j]
-                        * mHiddenNodes.get(k).getForwardOutputValue();
+                temp += mHiddenOutputWeight[k][j] * mHiddenNodes.get(k).getForwardOutputValue();
             }
             temp += mHiddenOutputBias[j];
             mOutputNodes.get(j).setForwardOutputValue(temp);
@@ -158,6 +158,7 @@ public class BpnnClassifier {
     /**
      * 更新权重，每个权重的梯度都等于与其相连的前一层节点的输出乘以与其相连的后一层的反向传播的输出
      * 没有b的值
+     * 后加上b的值
      */
     private void updateWeights(float eta) {
         // 更新输入层到隐层的权重矩阵
@@ -206,7 +207,7 @@ public class BpnnClassifier {
         BufferedWriter output = new BufferedWriter(new FileWriter(new File(Config.resultPath)));
 
         for (DataNode testNode : testList) {
-            int type = getType(testNode);
+            int type = getType(testNode);//进行预测
             System.out.println("***********");
             List<Float> attributes = testNode.getAttribList();
             for (int n = 0; n < attributes.size(); n++) {

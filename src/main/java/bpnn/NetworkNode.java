@@ -73,8 +73,7 @@ public class NetworkNode {
      * @return
      */
     private float tanhS(float in) {
-        return (float) ((Math.exp(in) - Math.exp(-in)) / (Math.exp(in) + Math
-                .exp(-in)));
+        return (float) ((Math.exp(in) - Math.exp(-in)) / (Math.exp(in) + Math.exp(-in)));
     }
 
     /**
