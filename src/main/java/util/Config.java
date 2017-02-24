@@ -41,19 +41,22 @@ public class Config {
     public static int nIter;
 
     /**
-     * 脾气虚证
+     * 气血两虚证
      */
-    public static String PiQiXuZhengNum;
+    public static String QiXueLiangXuZhengNum;
+    public static String QiXueLiangXuZheng;
 
     /**
-     * 脾阳虚证
+     * 脾气虚证/脾胃虚弱证
      */
-    public static String PiYangXuZhengNum;
+    public static String PiWeiXuRuoZhengNum;
+    public static String PiWeiXuRuoZheng;
 
     /**
-     * 脾肾阳虚证
+     * 肝肾阴虚证
      */
-    public static String PiShenYangXuZhengNum;
+    public static String GanShenYinXuZhengNum;
+    public static String GanShenYinXuZheng;
 
     static {
         Properties properties = new Properties();
@@ -68,9 +71,12 @@ public class Config {
         DELIMITER = properties.getProperty("DELIMITER");
         eta = Float.valueOf(properties.getProperty("eta"));
         nIter = Integer.valueOf(properties.getProperty("nIter"));
-        PiQiXuZhengNum = properties.getProperty("PiQiXuZhengNum");
-        PiYangXuZhengNum = properties.getProperty("PiYangXuZhengNum");
-        PiShenYangXuZhengNum = properties.getProperty("PiShenYangXuZhengNum");
+        QiXueLiangXuZhengNum = properties.getProperty("QiXueLiangXuZhengNum");
+        QiXueLiangXuZheng = properties.getProperty("QiXueLiangXuZheng");
+        PiWeiXuRuoZhengNum = properties.getProperty("PiWeiXuRuoZhengNum");
+        PiWeiXuRuoZheng = properties.getProperty("PiWeiXuRuoZheng");
+        GanShenYinXuZhengNum = properties.getProperty("GanShenYinXuZhengNum");
+        GanShenYinXuZheng = properties.getProperty("GanShenYinXuZheng");
 
     }
 }
