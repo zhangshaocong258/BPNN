@@ -219,6 +219,13 @@ public class BpnnClassifier {
             output.flush();
         }
         output.close();
+        //输出权值矩阵
+        for (int i = 0; i < mInputHiddenWeight.length; i++) {
+            for (int j = 0; j < mInputHiddenWeight[i].length; j++) {
+                System.out.print(mInputHiddenWeight[i][j] + "   ");
+            }
+            System.out.println();
+        }
 
     }
 
